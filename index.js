@@ -19,6 +19,12 @@ const divide = (firstNum, secondNum) => {
   return firstNum / secondNum;
 };
 
+const decimalFormat = (num = 0, numOfDecimal = 2) => {
+  return (
+    Math.round(num * Math.pow(10, numOfDecimal)) / Math.pow(10, numOfDecimal)
+  );
+};
+
 const operate = (operator, firstNum, secondNum) => {
   if (operator === "+") {
     return add(Number(firstNum), Number(secondNum));
@@ -33,7 +39,7 @@ const operate = (operator, firstNum, secondNum) => {
 };
 
 const isAnOperator = (value) => {
-  return /[+-/*]/.test(value);
+  return /\/|\+|-|\*/.test(value);
 };
 
 const isANumber = (value) => {
@@ -41,23 +47,20 @@ const isANumber = (value) => {
 };
 
 const addToDisplay = (value) => {
-  console.log("value", value);
-  console.log("display", displayValue);
   if (isAnOperator(value)) {
     if (firstNum && currentOperator && secondNum) {
       displayValue = operate(currentOperator, firstNum, secondNum);
-      firstNum = displayValue;
       currentOperator = value;
-      secondNum = displayValue;
+      firstNum = displayValue;
+      secondNum = 0;
     } else if (!currentOperator) {
       currentOperator = value;
       firstNum = displayValue;
-    } else if (!secondNum) {
-      secondNum = displayValue;
-      displayValue = operate(currentOperator, firstNum, secondNum);
+    } else if (!secondNum && currentOperator) {
+      displayValue = operate(currentOperator, firstNum, firstNum);
       firstNum = displayValue;
-      secondNum = displayValue;
-      currentOperator = value;
+      currentOperator = "";
+    } else {
     }
   } else if (value === "=") {
     if (firstNum && currentOperator && secondNum) {
@@ -77,7 +80,11 @@ const addToDisplay = (value) => {
     } else if (firstNum && currentOperator && !secondNum) {
       displayValue = value;
       secondNum = displayValue;
-    } else displayValue += value;
+    } else {
+      displayValue += value;
+      if (!firstNum || !currentOperator) firstNum = displayValue;
+      else if (firstNum && currentOperator) secondNum = displayValue;
+    }
   }
 };
 
@@ -98,7 +105,6 @@ display.textContent = displayValue;
 clearButton.addEventListener("click", clear);
 calculatorButtons.forEach((calculatorButton) => {
   calculatorButton.addEventListener("click", (evt) => {
-    // console.log(evt.target.value)
     addToDisplay(evt.target.value);
     display.textContent = displayValue;
   });

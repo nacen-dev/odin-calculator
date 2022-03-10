@@ -24,7 +24,7 @@
    1. You should already have the code that can populate the display, so once operate() has been called, update the display with the ‘solution’ to the operation.
    2. This is the hardest part of the project. You need to figure out how to store all the values and call the operate function with them. Don’t feel bad if it takes you a while to figure out the logic.
 
-6. Gotchas: watch out for and fix these bugs if they show up in your code:
+- [x] 6. Gotchas: watch out for and fix these bugs if they show up in your code:
 
    1. Users should be able to string together several operations and get the right answer, with each pair of numbers being evaluated at a time. For example, 12 + 7 - 5 \* 3 = should yield 42. An example of the behavior we’re looking for would be this student solution.
 
@@ -38,10 +38,10 @@
 
    6. Display a snarky error message if the user tries to divide by 0… don’t let it crash your calculator!
 
-7. EXTRA CREDIT: Users can get floating point numbers if they do the math required to get one, but they can’t type them in yet. Add a . button and let users input decimals! Make sure you don’t let them type more than one though: 12.3.56.5. It is hard to do math on these numbers. (disable the decimal button if there’s already one in the display)
+- [x] 7. EXTRA CREDIT: Users can get floating point numbers if they do the math required to get one, but they can’t type them in yet. Add a . button and let users input decimals! Make sure you don’t let them type more than one though: 12.3.56.5. It is hard to do math on these numbers. (disable the decimal button if there’s already one in the display)
 
 - [x] 8. EXTRA CREDIT: Make it look nice! This is a great project to practice your CSS skills. At least make the operations a different color from the keypad buttons.
 
-9. EXTRA CREDIT: Add a “backspace” button, so the user can undo if they click the wrong number.
+- [] 9. EXTRA CREDIT: Add a “backspace” button, so the user can undo if they click the wrong number.
 
-10. EXTRA CREDIT: Add keyboard support!
+- [x] 10. EXTRA CREDIT: Add keyboard support!

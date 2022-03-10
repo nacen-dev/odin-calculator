@@ -1,7 +1,8 @@
-let firstNum = 0;
-let secondNum = 0;
+let firstNum = null;
+let secondNum = null;
 let currentOperator = "";
 let displayValue = "0";
+let result = null;
 
 const add = (firstNum, secondNum) => {
   return firstNum + secondNum;
@@ -23,10 +24,16 @@ const divide = (firstNum, secondNum) => {
   return firstNum / secondNum;
 };
 
-const decimalFormat = (num = 0, numOfDecimal = 2) => {
+const decimalFormat = (number, numOfDecimal = 2) => {
   return (
-    Math.round(num * Math.pow(10, numOfDecimal)) / Math.pow(10, numOfDecimal)
+    Math.round(number * Math.pow(10, numOfDecimal)) / Math.pow(10, numOfDecimal)
   );
+};
+
+const checkIfLongDecimal = (number) => {
+  return number % 1 != 0
+    ? number.toString().match(/(?<=)\d+/g)[1].length >= 4
+    : false;
 };
 
 const operate = (operator, firstNum, secondNum) => {
@@ -42,59 +49,100 @@ const operate = (operator, firstNum, secondNum) => {
   return;
 };
 
-const isAnOperator = (value) => {
-  return /\/|\+|-|\*/.test(value);
+const isAnOperator = (input) => {
+  return /\/|\+|-|\*/.test(input);
 };
 
-const isANumber = (value) => {
-  return /\d/.test(value);
+const isANumber = (input) => {
+  return /\d/.test(input);
 };
 
-const addToDisplay = (value) => {
-  if (isAnOperator(value)) {
-    if (firstNum && currentOperator && secondNum) {
-      displayValue = operate(currentOperator, firstNum, secondNum);
-      currentOperator = value;
-      firstNum = displayValue;
-      secondNum = 0;
+const addToDisplay = (input) => {
+  if (isAnOperator(input)) {
+    if (firstNum !== null && currentOperator && secondNum !== null) {
+      displayValue = operate(currentOperator, firstNum, secondNum).toString();
+
+      displayValue = checkIfLongDecimal(displayValue)
+        ? decimalFormat(displayValue).toString()
+        : displayValue;
+
+      currentOperator = input;
+      firstNum = Number(displayValue);
+      secondNum = null;
     } else if (!currentOperator) {
-      currentOperator = value;
-      firstNum = displayValue;
-    } else if (!secondNum && currentOperator) {
-      displayValue = operate(currentOperator, firstNum, firstNum);
-      firstNum = displayValue;
-      currentOperator = "";
-    } else {
+      console.log("no operator yet");
+      currentOperator = input;
+      firstNum = Number(displayValue);
+    } else if (firstNum !== null && secondNum === null && currentOperator) {
+      if (input === currentOperator) {
+        displayValue = operate(currentOperator, firstNum, firstNum).toString();
+        displayValue = checkIfLongDecimal(displayValue)
+          ? decimalFormat(displayValue).toString()
+          : displayValue;
+
+        firstNum = Number(displayValue);
+        // currentOperator = "";
+      } else {
+        currentOperator = input;
+      }
     }
-  } else if (value === "=") {
-    if (firstNum && currentOperator && secondNum) {
-      displayValue = operate(currentOperator, firstNum, secondNum);
-      firstNum = displayValue;
-      secondNum = 0;
-      currentOperator = "";
+  } else if (input === "=") {
+    if (firstNum !== null && currentOperator && secondNum !== null) {
+      displayValue = operate(currentOperator, firstNum, secondNum).toString();
+      displayValue = checkIfLongDecimal(displayValue)
+        ? decimalFormat(displayValue).toString()
+        : displayValue;
+
+      firstNum = Number(displayValue);
+      secondNum = null;
+    } else if (firstNum !== null && currentOperator && secondNum === null) {
+      displayValue = operate(currentOperator, firstNum, firstNum).toString();
+      displayValue = checkIfLongDecimal(displayValue)
+        ? decimalFormat(displayValue).toString()
+        : displayValue;
+
+      firstNum = Number(displayValue);
+      secondNum = null;
     }
-  } else if (value === ".") {
+  } else if (input === ".") {
     if (displayValue.includes(".")) return;
-    else {
-      displayValue += value;
-    }
-  } else if (isANumber(value)) {
+    displayValue += input;
+  } else if (isANumber(input)) {
+    console.log("input is a number");
     if (displayValue === "0") {
-      displayValue = value;
-    } else if (firstNum && currentOperator && !secondNum) {
-      displayValue = value;
-      secondNum = displayValue;
-    } else {
-      displayValue += value;
-      if (!firstNum || !currentOperator) firstNum = displayValue;
-      else if (firstNum && currentOperator) secondNum = displayValue;
+      displayValue = input;
+      if (firstNum === null) {
+        firstNum = Number(input);
+      } else {
+        secondNum = Number(input);
+      }
+    } else if (firstNum !== null && currentOperator && secondNum === null) {
+      displayValue = input;
+      secondNum = Number(displayValue);
+    } else if (!currentOperator) {
+      displayValue += input;
+      firstNum = Number(displayValue);
+    } else if (firstNum !== null && currentOperator && secondNum) {
+      displayValue += input;
+      secondNum = Number(displayValue);
+    }
+  } else if (input === "Backspace") {
+    currentOperator = "";
+    if (firstNum && !secondNum) {
+      displayValue = displayValue.slice(0, -1);
+      displayValue = displayValue.length === 0 ? "0" : displayValue;
+      firstNum = Number(displayValue);
+    } else if (firstNum !== null && secondNum !== null) {
+      displayValue = displayValue.slice(0, -1);
+      displayValue = displayValue.length === 0 ? "0" : displayValue;
+      secondNum = Number(displayValue);
     }
   }
 };
 
 const clear = () => {
-  firstNum = 0;
-  secondNum = 0;
+  firstNum = null;
+  secondNum = null;
   currentOperator = "";
   displayValue = "0";
   display.textContent = displayValue;
@@ -108,8 +156,8 @@ display.textContent = displayValue;
 
 clearButton.addEventListener("click", clear);
 calculatorButtons.forEach((calculatorButton) => {
-  calculatorButton.addEventListener("click", (evt) => {
-    addToDisplay(evt.target.value);
+  calculatorButton.addEventListener("click", (event) => {
+    addToDisplay(event.target.value);
     display.textContent = displayValue;
   });
 });
@@ -119,8 +167,28 @@ document.addEventListener("keydown", (event) => {
     case "c":
     case "C":
       clear();
-      return;
+      break;
+    case "+":
+    case "-":
+    case "/":
+    case "*":
+    case "0":
+    case "1":
+    case "2":
+    case "3":
+    case "4":
+    case "5":
+    case "6":
+    case "7":
+    case "8":
+    case "9":
+    case ".":
+    case "=":
+    case "Backspace":
+      addToDisplay(event.key);
+      display.textContent = displayValue;
+      break;
     default:
-      return;
+      break;
   }
 });

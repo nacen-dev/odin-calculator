@@ -16,6 +16,10 @@ const multiply = (firstNum, secondNum) => {
 };
 
 const divide = (firstNum, secondNum) => {
+  if (secondNum === 0) {
+    alert("Unable to divide by 0");
+    return 0;
+  }
   return firstNum / secondNum;
 };
 

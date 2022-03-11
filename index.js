@@ -1,6 +1,6 @@
 let firstNum = null;
 let secondNum = null;
-let currentOperator = "";
+let currentOperator = null;
 let displayValue = "0";
 let result = null;
 
@@ -57,6 +57,12 @@ const isANumber = (input) => {
   return /\d/.test(input);
 };
 
+const backspace = (displayValue) => {
+  displayValue = displayValue.slice(0, -1);
+  displayValue = displayValue.length === 0 ? "0" : displayValue;
+  return displayValue;
+};
+
 const addToDisplay = (input) => {
   if (isAnOperator(input)) {
     if (firstNum !== null && currentOperator && secondNum !== null) {
@@ -65,26 +71,46 @@ const addToDisplay = (input) => {
       displayValue = checkIfLongDecimal(displayValue)
         ? decimalFormat(displayValue).toString()
         : displayValue;
+      result = Number(displayValue);
 
       currentOperator = input;
-      firstNum = Number(displayValue);
+      firstNum = result;
       secondNum = null;
     } else if (!currentOperator) {
-      console.log("no operator yet");
+      if (firstNum === null) {
+        firstNum = Number(displayValue);
+      }
       currentOperator = input;
-      firstNum = Number(displayValue);
-    } else if (firstNum !== null && secondNum === null && currentOperator) {
+    } else if (
+      (firstNum !== null || result !== null) &&
+      secondNum === null &&
+      currentOperator
+    ) {
+      console.log(`first num has a value, secondNum is empty`);
       if (input === currentOperator) {
-        displayValue = operate(currentOperator, firstNum, firstNum).toString();
+        let operatingInput = result !== null ? result : firstNum;
+        displayValue = operate(
+          currentOperator,
+          operatingInput,
+          operatingInput
+        ).toString();
         displayValue = checkIfLongDecimal(displayValue)
           ? decimalFormat(displayValue).toString()
           : displayValue;
-
-        firstNum = Number(displayValue);
-        // currentOperator = "";
+        result = Number(displayValue);
+        firstNum = null;
+        currentOperator = input;
       } else {
         currentOperator = input;
       }
+    } else if (result !== null && currentOperator && secondNum !== null) {
+      displayValue = operate(currentOperator, result, secondNum).toString();
+      displayValue = checkIfLongDecimal(displayValue)
+        ? decimalFormat(displayValue).toString()
+        : displayValue;
+      result = Number(displayValue);
+      currentOperator = input;
+      secondNum = null;
     }
   } else if (input === "=") {
     if (firstNum !== null && currentOperator && secondNum !== null) {
@@ -92,16 +118,31 @@ const addToDisplay = (input) => {
       displayValue = checkIfLongDecimal(displayValue)
         ? decimalFormat(displayValue).toString()
         : displayValue;
-
-      firstNum = Number(displayValue);
+      currentOperator = null;
+      result = Number(displayValue);
+      firstNum = null;
       secondNum = null;
     } else if (firstNum !== null && currentOperator && secondNum === null) {
       displayValue = operate(currentOperator, firstNum, firstNum).toString();
       displayValue = checkIfLongDecimal(displayValue)
         ? decimalFormat(displayValue).toString()
         : displayValue;
-
-      firstNum = Number(displayValue);
+      currentOperator = null;
+      firstNum = null;
+      secondNum = null;
+      result = Number(displayValue);
+    } else if (
+      firstNum === null &&
+      result !== null &&
+      currentOperator &&
+      secondNum
+    ) {
+      displayValue = operate(currentOperator, result, secondNum).toString();
+      displayValue = checkIfLongDecimal(displayValue)
+        ? decimalFormat(displayValue).toString()
+        : displayValue;
+      currentOperator = null;
+      result = Number(displayValue);
       secondNum = null;
     }
   } else if (input === ".") {
@@ -111,31 +152,51 @@ const addToDisplay = (input) => {
     console.log("input is a number");
     if (displayValue === "0") {
       displayValue = input;
+      result = null;
       if (firstNum === null) {
         firstNum = Number(input);
       } else {
         secondNum = Number(input);
       }
+    } else if (result !== null) {
+      if (!currentOperator) {
+        displayValue = input;
+
+        firstNum = Number(displayValue);
+        result = null;
+      } else if (currentOperator) {
+        if (secondNum !== null) {
+          displayValue += input;
+        } else if (secondNum === null) {
+          displayValue = input;
+        }
+        secondNum = Number(displayValue);
+      }
     } else if (firstNum !== null && currentOperator && secondNum === null) {
       displayValue = input;
       secondNum = Number(displayValue);
     } else if (!currentOperator) {
-      displayValue += input;
-      firstNum = Number(displayValue);
+      if (result !== null) {
+        displayValue = input;
+        firstNum = Number(displayValue);
+      } else if (result === null) {
+        displayValue += input;
+        firstNum = Number(displayValue);
+      }
     } else if (firstNum !== null && currentOperator && secondNum) {
       displayValue += input;
       secondNum = Number(displayValue);
     }
   } else if (input === "Backspace") {
-    currentOperator = "";
-    if (firstNum && !secondNum) {
-      displayValue = displayValue.slice(0, -1);
-      displayValue = displayValue.length === 0 ? "0" : displayValue;
+    if (firstNum !== null && !currentOperator && secondNum === null) {
+      displayValue = backspace(displayValue);
       firstNum = Number(displayValue);
     } else if (firstNum !== null && secondNum !== null) {
-      displayValue = displayValue.slice(0, -1);
-      displayValue = displayValue.length === 0 ? "0" : displayValue;
+      displayValue = backspace(displayValue);
       secondNum = Number(displayValue);
+    } else if (firstNum === null && secondNum === null && result !== null) {
+      displayValue = backspace(displayValue);
+      result = Number(displayValue);
     }
   }
 };
@@ -146,6 +207,7 @@ const clear = () => {
   currentOperator = "";
   displayValue = "0";
   display.textContent = displayValue;
+  result = null;
 };
 
 const display = document.querySelector(".display");

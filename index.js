@@ -112,7 +112,7 @@ const addToDisplay = (input) => {
       currentOperator = input;
       secondNum = null;
     }
-  } else if (input === "=") {
+  } else if (input === "=" || input === "Enter") {
     if (firstNum !== null && currentOperator && secondNum !== null) {
       displayValue = operate(currentOperator, firstNum, secondNum).toString();
       displayValue = checkIfLongDecimal(displayValue)
@@ -247,6 +247,7 @@ document.addEventListener("keydown", (event) => {
     case ".":
     case "=":
     case "Backspace":
+    case "Enter":
       addToDisplay(event.key);
       display.textContent = displayValue;
       break;
